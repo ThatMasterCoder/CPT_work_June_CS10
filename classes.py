@@ -85,6 +85,9 @@ class DamageType:
         else:
             raise DamageException('Invalid Type of damage')
 
+    def __str__(self):
+        return str(self.damage_type)
+
     @staticmethod
     def check(damage_type):
         return damage_type in ['Phys', 'Magic']
@@ -140,6 +143,9 @@ class Weapon(Gear):
         self.damage = damage
         self.damage_type = damage_type
 
+    def __str__(self):
+        return f"{self.name}: {self.damage} damage ({self.damage_type})"
+
 
 class Character:
     def __init__(self, name: str, hp: int, max_hp: int, attack: int, defense: Defense):
@@ -176,9 +182,9 @@ class Character:
 
 class Player(Character):
     # starts with 100 hp, 0 defense of all types
-    # starts with 1 attack (fist)
-    def __init__(self, name, hp=100, max_hp=100, attack=1, defense: Defense = Defense(0,0), armor: Armor | None = None,
-                 weapons: list[Weapon] | None = None):
+    # starts with 0 attack
+    def __init__(self, name, hp=100, max_hp=100, attack=0, defense: Defense = Defense(0,0), armor: Armor | None = None,
+                 weapons: list[Weapon | None] = [None, None, None, None]):
         super().__init__(name, hp, max_hp, attack, defense)
         self.armor = armor
         self.weapons = weapons
@@ -243,5 +249,4 @@ class Enemy(Character):
             print(eval('mobs.' + underscoreify(self.name).capitalize()))
         except AttributeError as e:
             raise AttributeError(str(e) + f'Mob tried: {self.name}')
-
 
