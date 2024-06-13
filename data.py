@@ -41,3 +41,4 @@ Weapons = [
 ]
 
 Spells = []
+Buffs = []
