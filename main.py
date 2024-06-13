@@ -15,13 +15,18 @@ TODO:
 3. ADD MORE SPELLS JLKASJFKA:SFLKJ:SEOGIJSDLKF
 99. Add coloured text
 """
+
+
 def _input(_prompt: str = '') -> int:
     while True:
         try:
-            return int(input(_prompt))
+            if _prompt == '':
+                return int(input(">>> "))
+            else:
+                print(_prompt)
+                return int(input(">>> "))
         except ValueError:
             print("Invalid input. Try again.")
-
 
 
 def welcome_screen():
@@ -32,8 +37,8 @@ def welcome_screen():
 | |/\| |/ _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \         
 \  /\  /  __/ | (_| (_) | | | | | |  __/ | || (_) |        
  \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/         
-                                                           
-                                                           
+
+
 ) (`-.       ('-.     _  .-')     ('-.   .-') _    ('-. .-.      .-')                      ('-.             _  .-')   
  ( OO ).    ( OO ).-.( \( -O )  _(  OO) (  OO) )  ( OO )  /,--. ( OO ).                   ( OO ).-.        ( \( -O )  
 (_/.  \_)-. / . --. / ,------. (,------./     '._ ,--. ,--.\  |(_)---\_)       ,--.       / . --. /  ,-.-') ,------.  
@@ -44,8 +49,9 @@ def welcome_screen():
  /  .'.  \  |  | |  | |  |\  \  |  `---.   |  |   |  | |  |    \       /       |      |   |  | |  |(_|  |   |  |\  \  
 '--'   '--' `--' `--' `--' '--' `------'   `--'   `--' `--'     `-----'        `------'   `--' `--'  `--'   `--' '--' 
 
-                                                           
+
 """)
+
 
 def help_screen():
     print("Stats: ")
@@ -74,17 +80,20 @@ def help_screen():
 
     print("Good luck, and have fun!\n\n")
 
+
 def pick_mob(chamber_num) -> Enemy:
     if (picked_mob := data.bosses.get(chamber_num)) is None:
         return rand.choice(data.regular_mobs)
     else:
         return picked_mob
 
+
 def battle(player: Player, enemy: Enemy):
     muted = False
     while player.is_alive() and enemy.is_alive():
         sleep(0.5)
-        #enemy.print_ascii_art()
+        print("\n")
+        # enemy.print_ascii_art()
         print('ascii art goes here lol')
         print(enemy.name)
         enemy.print_stats()
@@ -94,13 +103,22 @@ def battle(player: Player, enemy: Enemy):
         player.print_ascii_art()
         player.print_stats()
         if not muted:
-            action = input('>>> ')
-            warn('action not delivered (nothing done)')
+            println(30)
+            for weapon_num, weapon in enumerate(player.weapons_list()):
+                print(f"{weapon_num+1}: {weapon}")
+
+            while True:
+                action = _input()
+                if 1 <= action <= 4 and player.weapons_list()[action-1]:
+                    break
+                else:
+                    print("Not a valid choice. ")
+
         else:
             print("You were silenced! You cannot take a turn!")
-            muted = False
 
-        if rand.randint(1, 4) == 3:
+
+        if not muted and rand.randint(1, 4) == 3:
             if enemy.special:
                 if enemy.name != "Wizard":
                     # this is because spilling a spell by accident is not a special ability
@@ -110,13 +128,13 @@ def battle(player: Player, enemy: Enemy):
                         print('The healer healed herself for 1 health!')
                         enemy.heal(1)
                     case "Wizard":
-                        if rand.randint(1,2) == 3:
+                        if rand.randint(1, 2) == 3:
                             print("The wizard spilled his healing spell on you! (player +5 hp)")
                             player.heal(5)
 
                     case "Jason":
-                        print("Jason nerfed himself and reduced his defenses by 5!")
-                        enemy.defense.reduce_additive("Both", 5)
+                        print("Jason nerfed himself and reduced his defenses by 10!")
+                        enemy.defense.reduce_additive("Both", 10)
                     case "Grim Reaper":
                         print("The Grim Reaper used Super Drain!")
                         print("The Grim Reaper stole 5 health from you!")
@@ -130,9 +148,10 @@ def battle(player: Player, enemy: Enemy):
                         print("The Golem Fortifies itself! (+ 5 Physical Defense)")
                         enemy.defense += Defense(5, 0)
                     case "Medusa":
-                        roll = (rand.randint(1,2) == 2)  # make it harder
+                        roll = (rand.randint(1, 2) == 2)  # make it harder
                         if roll:
                             print("Medusa silenced you! You cannot take the next turn. ")
+                            muted = True
                         else:
                             print("Medusa tried to silence you, but failed!")
                     case _:
@@ -141,7 +160,8 @@ def battle(player: Player, enemy: Enemy):
         elif enemy.name == 'Xareth, the Void Emperor':
             raise NotImplementedError('yea idk ill figure something out for this')
         # maybe it could summon something?
-
+        else:
+            muted = False
 
     if not player.is_alive():
         print("You DIED!")
@@ -151,13 +171,14 @@ def battle(player: Player, enemy: Enemy):
 
 
 def println(length: int = 20) -> None:
-    print('-'*length)
+    print('-' * length)
+
 
 def main():
     replay = True
     while replay:
         welcome_screen()
-        player_input = _input("Enter 1 to play the game, enter 2 for help, enter anything else to quit\n")
+        player_input = _input("Enter 1 to play the game, enter 2 for help, enter anything else to quit")
 
         match player_input:
             case 1:
@@ -172,13 +193,15 @@ def main():
             player.hp = _input("hp: ")
             player.max_hp = player.hp
             player.attack = _input('atk: ')
+            player.name = 'CHEATS ENABLED'
 
-        player.name = 'CHEATS ENABLED'
+
         print(f"Hello {player.name}. We have been expecting you. The first trial chamber is already open.")
 
         enemy_buff = 0
+        player.weapons[0] = (data.Weapons[0])  # fist
         for chamber in range(1, 51):
-            println()
+            println(40)
             print(f"CHAMBER {chamber}")
             if chamber == 50:
                 picked_mob = 'Xareth, the Void Emperor'
@@ -191,7 +214,7 @@ def main():
                 print("You have failed! Xareth prevails once again.")
                 print("Would you like to play again?")
 
-                replay = (input()[0].lower() =='y')
+                replay = (input()[0].lower() == 'y')
                 if not replay:
                     exit("See you again, Prisoner...")
                 print("\n\n")
@@ -203,4 +226,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
