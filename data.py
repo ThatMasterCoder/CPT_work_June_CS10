@@ -27,16 +27,16 @@ regular_mobs = [
     Enemy("Knight", 14,14, randint(2,5), Defense(10, 0)),
     Enemy("Prince", hp := randint(7,15), hp, randint(5,10), Defense(30, 0)),
     Enemy("Healer", 15, 15, randint(1,3), Defense(10,10), special=True),
-    Enemy("Jason", 6,4, randint(3,5), Defense(50, 50), special=True),
+    Enemy("Jason", 6,6, randint(3,5), Defense(50, 50), special=True),
     Enemy("Tiger", 8,8, randint(5,8), Defense(5,0)),
-    Enemy("Black Cat", 3, 2, 50, Defense(0,0))
+    Enemy("Black Cat", 3, 3, 50, Defense(0,0))
 ]
 
 """name, durability, damage, damage_type: DamageType"""
 Phys = "Phys"
 Magic = "Magic"
 Weapons = [
-    Weapon('Fist', 100, 1, DamageType(Phys)),
+    Weapon('Fist', 100, 2, DamageType(Phys)),
 
 ]
 
