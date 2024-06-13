@@ -114,19 +114,24 @@ def battle(player: Player, enemy: Enemy):
                 else:
                     print("Not a valid choice. ")
 
+            weapon_selected = player.weapons_list()[action-1]
+            damage_dealt = DamageType.calc_dmg(weapon_selected.damage, eval(f"enemy.defense.{weapon_selected.damage_type}"))
+            print(damage_dealt)
+
         else:
             print("You were silenced! You cannot take a turn!")
 
 
-        if not muted and rand.randint(1, 4) == 3:
+        if not muted and rand.randint(1, 3) == 3:
             if enemy.special:
                 if enemy.name != "Wizard":
                     # this is because spilling a spell by accident is not a special ability
                     print(f"{enemy.name} has a SPECIAL ability! ")
+                sleep(0.25)
                 match enemy.name:
                     case "Healer":
-                        print('The healer healed herself for 1 health!')
-                        enemy.heal(1)
+                        print('The healer healed herself for 3 health!')
+                        enemy.heal(3)
                     case "Wizard":
                         if rand.randint(1, 2) == 3:
                             print("The wizard spilled his healing spell on you! (player +5 hp)")
@@ -156,6 +161,7 @@ def battle(player: Player, enemy: Enemy):
                             print("Medusa tried to silence you, but failed!")
                     case _:
                         raise IndexError("battle special ability not existed")
+                sleep(0.25)
 
         elif enemy.name == 'Xareth, the Void Emperor':
             raise NotImplementedError('yea idk ill figure something out for this')
