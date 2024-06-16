@@ -131,13 +131,14 @@ class Weapon(Gear):
     """
     For Player to use
     """
-    def __init__(self, name, durability, damage, damage_type: DamageType):
+    def __init__(self, name, durability, damage, damage_type: DamageType, special=False):
         super().__init__(name, durability)
         self.damage = damage
         self.damage_type = damage_type
+        self.special = special
 
     def __str__(self):
-        return f"{self.name}: {self.damage} damage ({self.damage_type})"
+        return f"{self.name}: {self.damage} damage ({self.damage_type}), Special Ability: {self.special}"
 
 
 class Character:
@@ -221,9 +222,7 @@ class Player(Character):
 
         print(f"You have a total defense value of {self.defense}")
 
-    def print_hp(self):
-        super().print_stats()
-        self.print_def()
+
 
 
 
@@ -245,4 +244,3 @@ class Enemy(Character):
             print(eval('mobs.' + underscoreify(self.name).capitalize()))
         except AttributeError as e:
             raise AttributeError(str(e) + f'Mob tried: {self.name}')
-
