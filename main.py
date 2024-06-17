@@ -1,9 +1,7 @@
 import random as rand
 from classes import *
-import mobs
 import data
 from time import sleep
-from warnings import warn
 
 """
 TODO: 
@@ -67,16 +65,16 @@ def help_screen():
     print("\tComes in two types: Physical Weapon and Offensive Spell")
     print("\tYou can only hold 4 weapons at a time")
     print(
-        "\tPhysical Weapons are generally slightly stronger than offensive spells, however Physical Weapons have durability")
-    print("\tDurability is simply the amount of rounds you can use it in")
-    print("\t\tNote: if you do not use the weapon in the round, durability damage will not be taken")
-    print("\tOffensive Spells either deal damage or debuff the enemy in some way. They have limited uses!")
-    print("Buffing Spell: This type of spell temporarily boosts one of your stats")
-    print("Healing Spell: This type of spell heals you for a certain amount")
+        "\tPhysical Weapons are generally slightly stronger than spells, however Physical Weapons have durability")
+    print("\tDurability is simply the amount of times you can use it")
+    print("\tDebuff Spells debuff the enemy in some way. They have limited uses!")
+    print("\tYou can only use 7 debuff potions per chamber.")
     print("Armor: This type of gear will increase your defense temporarily. Also has durability.")
+    print("1 armor durability is subtracted every time you take damage.")
 
     print("Your objective is to get through all 50 rounds of trial chambers. ")
     print("After defeating an enemy in the chamber, you will be rewarded with items. ")
+    print("After defeating a boss, a Restoration Tower will restore your health to maximum.")
     print("This game is a turn based game, you always start with the first turn.")
 
     print("Good luck, and have fun!\n\n")
@@ -88,9 +86,11 @@ def pick_mob(chamber_num) -> Enemy:
     else:
         return picked_mob
 
-
+inventory = []
 def battle(player: Player, enemy: Enemy):
+    global inventory
     muted = False
+    potions = 0
     while player.is_alive() and enemy.is_alive():
         sleep(0.5)
         print("\n")
@@ -112,17 +112,70 @@ def battle(player: Player, enemy: Enemy):
 
             while True:
                 action = _input()
-                if 1 <= action <= 4 and player.weapons_list()[action - 1]:
+
+                if 1 <= action <= 5 and player.weapons_list()[action - 1]:
                     break
                 else:
                     print("Not a valid choice. ")
 
+                while action == 5:
+                    if potions >= 7:
+                        print("You cannot use any more potions in this chamber!")
+                    for index, item in enumerate(inventory):
+                        print(f"{index + 1}: {item}")
+                    print(f"{(exit_num := len(inventory)+1)}: Exit")
+
+                    while True:
+                        inv_input = _input()
+                        if 1 <= inv_input <= len(inventory)+1:
+                            break
+                        else:
+                            print("Invalid!")
+
+                    if inv_input == exit_num:
+                        break
+
+                    match inventory[inv_input-1]:
+                        case "Shield Depletor":
+                            print("Enemy's both type of defense reduced by 10%!")
+                            enemy.defense.reduce_multiplicative("Both", 10)
+                            potions +=1
+                            break
+                        case "Sword Dull'r":
+                            print("Enemy attack reduced by 3!")
+                            enemy.attack -= 2
+                            potions +=1
+                            break
+                        case "Carcinogenic Potion":
+                            print("Enemy attack reduced by 1, Enemy physical defense reduced by 7%!")
+                            enemy.defense.reduce_multiplicative("Phys", 7)
+                            potions +=1
+                            break
+                        case "Steel Melter":
+                            print("Enemy attack reduced by 2, Enemy Physical Defense reduced by 4%!")
+                            enemy.defense.reduce_multiplicative("Phys", 4)
+                            enemy.attack += 2
+                            potions +=1
+                            break
+                        case "Magic Res. Shredder":
+                            print("Enemy Magic Defense reduced by 25%!")
+                            enemy.defense.reduce_multiplicative("Magic", 25)
+                            potions += 1
+                            break
+                        case _:
+                            print("Invalid!")
+
+
+
             weapon_selected = player.weapons_list()[action - 1]
             damage_dealt = DamageType.calc_dmg(weapon_selected.damage + player.attack,
                                                eval(f"enemy.defense.{weapon_selected.damage_type}"))
+
             enemy.take_damage(damage_dealt)
-            player_take_dmg = DamageType.calc_dmg(enemy.attack, eval(f"player.defense.{data.mob_type[enemy.name]}"))
-            player.take_damage(player_take_dmg)
+            player.weapons_list()[action - 1].take_dur_damage()
+            if enemy.is_alive():
+                player_take_dmg = DamageType.calc_dmg(enemy.attack, eval(f"player.defense.{data.mob_type[enemy.name]}"))
+                player.take_damage(player_take_dmg)
 
         else:
             print("You were silenced! You cannot take a turn!")
@@ -130,7 +183,7 @@ def battle(player: Player, enemy: Enemy):
         if not player.is_alive() or not enemy.is_alive():
             break
 
-        if not muted and rand.randint(1, 3) == 3:
+        if not muted and rand.randint(1, 3) == 3 and enemy.name != 'Xareth, the Void Emperor':
             if enemy.special:
                 if enemy.name != "Wizard":
                     # this is because spilling a spell by accident is not a special ability
@@ -158,8 +211,8 @@ def battle(player: Player, enemy: Enemy):
                         print(f"Your health: {prev_user_hp}/{player.max_hp} --> {player.hp}/{player.max_hp}")
                         print(f"Grim Reaper health: {prev_grim_hp}/{enemy.max_hp} --> {enemy.hp}/{enemy.max_hp}")
                     case "Golem":
-                        print("The Golem Fortifies itself! (+ 5 Physical Defense)")
-                        enemy.defense += Defense(5, 0)
+                        print("The Golem Fortifies itself! (+ 2 Physical Defense)")
+                        enemy.defense += Defense(2, 0)
                     case "Medusa":
                         roll = (rand.randint(1, 2) == 2)  # make it harder
                         if roll:
@@ -170,10 +223,13 @@ def battle(player: Player, enemy: Enemy):
                     case _:
                         raise IndexError(f"battle special ability not existed, given: {enemy.name}")
 
-
         elif enemy.name == 'Xareth, the Void Emperor':
-            raise NotImplementedError('yea idk ill figure something out for this')
-        # maybe it could summon something?
+            if rand.randint(1, 4) == 2:
+                print("Xareth buffs himself!")
+                print("Xareth gains +1 attack, +2 defense, +2 hp")
+                enemy.attack += 1
+                enemy.defense += Defense(2,2)
+                enemy.heal(2)
         else:
             muted = False
 
@@ -194,7 +250,7 @@ def encounter(player: Player):
 
     options = [rand.choice(data.Weapons) for _ in range(2)]
     for spell in range(2):
-        options.append(rand.choice(data.Offensive_Spells))
+        options.append(rand.choice(data.Debuff_Spells))
 
     for index, option in enumerate(options):
         print(f"{index + 1}. {option}")
@@ -290,7 +346,7 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
 
             print(f"{player.max_hp-10} max hp increased to {player.max_hp}")
             print(f"{player.attack-10} attack increased to {player.attack}")
-            print(f"Consuming your health lowered your health to {player.hp}!")
+            print(f"Consuming your health lowered your health to {player.hp} hp!")
         case "Josh's Blessing":
             player.max_hp += 10
             player.defense = player.defense + Defense(0,5)
@@ -318,12 +374,16 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
             "Heals you to max hp instantly and restores 2 durability to all current weapons."
             player.heal(99999)
             for weapon in player.weapons:
-                weapon.durability += 2
+                if weapon is not None:
+                    weapon.durability += 2
         case _:
-            raise IndexError("Blessing Does Not Exist")
+            raise IndexError(f"Blessing Does Not Exist: blessing given: {blessings} -> {chosen_blessing}")
 
+    input("Press Enter to continue...")
+    return
 
 def main():
+    global inventory
     replay = True
     while replay:
         welcome_screen()
@@ -337,7 +397,7 @@ def main():
             case _:
                 exit()
         player = Player(input("Prisoner, declare your name at once: "))
-
+        inventory = []
         if player.name == "debug":
             player.hp = _input("hp: ")
             player.max_hp = player.hp
@@ -348,7 +408,7 @@ def main():
 
         enemy_buff = 0
         data.init_defs()
-        player.weapons[0] = (data.Weapons[0])  # fist
+        player.weapons[0] = Weapon('Fist', 1000, 2, DamageType("Phys"))  # fist
         jason_counter = 0
         for chamber in range(1, 51):
             println(40)
@@ -380,7 +440,14 @@ def main():
                 blessing(player, jason_counter)
 
         if player.is_alive():
-            raise NotImplementedError("MISSING SOME KIND OF WINNING MESSAGE")
+            print("You have successfully conquered Xareth's Dungeon. You win!")
+            print("Would you like to play again?")
+
+            replay = (input()[0].lower() == 'y')
+            if not replay:
+                exit("See you again, Prisoner...")
+            print("\n\n")
+            break
 
 
 if __name__ == '__main__':
