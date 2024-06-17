@@ -107,11 +107,6 @@ class Gear:
             self.durability = 0
         return self.durability
 
-class Buff:
-    def __init__(self, name, healing, attack_buff):
-        self.name = name
-        self.healing = healing
-        self.attack_buff = attack_buff
 
 class Armor(Gear):
     """
