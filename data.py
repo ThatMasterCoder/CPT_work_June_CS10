@@ -9,11 +9,10 @@ bosses = {}
 regular_mobs = []
 mob_type = {}
 Weapons = []
-Offensive_Spells = []
-Buff_Spells = []
-Buffs = []
+Debuff_Spells = []
+
 def init_defs():
-    global bosses, regular_mobs, mob_type, Weapons, Offensive_Spells, Buffs, Buff_Spells
+    global bosses, regular_mobs, mob_type, Weapons, Debuff_Spells
     bosses = {
         10: Enemy("Snake", hp := randint(20, 30), hp, randint(7, 10),
                   Defense(30, randint(10, 20))),
@@ -69,11 +68,24 @@ def init_defs():
     """name, durability, damage, damage_type: DamageType"""
 
     Weapons = [
-        Weapon('Fist', 100, 2, DamageType(Phys)),
-
+        Weapon('Iron Sword', 15, 5, DamageType(Phys)),
+        Weapon('Spike-Infused Potion', 15, 4, DamageType(Magic)),
+        Weapon("Medora's Staff", 5, 23, DamageType(Magic)),
+        Weapon("Maxor's Dagger", 20, 4, DamageType(Phys)),
+        Weapon("Scylla's Wand", 20, 4, DamageType(Magic)),
+        Weapon("Seymour's Whip", 8, 12, DamageType(Phys)),
+        Weapon("Fire Wand", 15, 5, DamageType(Magic)),
+        Weapon("Alexander's Blade", 15, 10, DamageType(Phys)),
+        Weapon("Lava Spray Wand", 10, 8, DamageType(Magic)),
+        Weapon('Life Steal Dagger', 10, 9, DamageType(Phys))
+    ]
+    Debuff_Spells = [
+        "Shield Depletor",
+        "Sword Dull'r",
+        "Carcinogenic Potion",
+        "Steel Melter",
+        "Magic Res. Shredder"
     ]
 
-    Offensive_Spells = []
-    Buffs = []
-    Buff_Spells = []
-    return bosses, regular_mobs, mob_type, Weapons, Offensive_Spells, Buffs
+
+    return bosses, regular_mobs, mob_type, Weapons, Debuff_Spells
