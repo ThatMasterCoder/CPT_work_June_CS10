@@ -86,7 +86,13 @@ def pick_mob(chamber_num) -> Enemy:
     else:
         return picked_mob
 
-inventory = []
+inventory: list[tuple[str, int]] = [] # int being amount of uses
+
+def spell_take_damage(index):
+    inventory[index] = (inventory[index][0], inventory[index][1]-1)
+    if inventory[index][1] <= 0:
+        inventory.pop(index)
+
 def battle(player: Player, enemy: Enemy):
     global inventory
     muted = False
@@ -94,57 +100,66 @@ def battle(player: Player, enemy: Enemy):
     while player.is_alive() and enemy.is_alive():
         sleep(0.5)
         print("\n")
-        # enemy.print_ascii_art()
-        print('ascii art goes here lol')
+        enemy.print_ascii_art()
         print(enemy.name)
         enemy.print_stats()
         print('\n\n')
 
+        sleep(0.5)
         print(f"Player: {player.name}")
         player.print_ascii_art()
         player.print_stats()
         if not muted:
             println(30)
-            for weapon_num, weapon in enumerate(player.weapons_list()):
-                print(f"{weapon_num + 1}: {weapon}")
-
-            print(f"5. Open Inventory")
 
             while True:
+                for weapon_num, weapon in enumerate(player.weapons_list()):
+                    print(f"{weapon_num + 1}: {weapon}")
+
+                print(f"5. Open Inventory")
+
+                prev_spell_count = potions
                 action = _input()
 
-                if 1 <= action <= 5 and player.weapons_list()[action - 1]:
+                if 1 <= action <= 4 and player.weapons_list()[action - 1]:
                     break
+                elif action == 5:
+                    pass
                 else:
                     print("Not a valid choice. ")
 
                 while action == 5:
                     if potions >= 7:
                         print("You cannot use any more potions in this chamber!")
+                        break
+                    if len(inventory) == 0:
+                        print("You have no items in your inventory.")
                     for index, item in enumerate(inventory):
-                        print(f"{index + 1}: {item}")
+                        print(f"{index + 1}: {item[0]} - {item[1]} uses remaining")
                     print(f"{(exit_num := len(inventory)+1)}: Exit")
 
                     while True:
-                        inv_input = _input()
-                        if 1 <= inv_input <= len(inventory)+1:
+                        inv_input = _input()-1
+                        if 0 <= inv_input <= exit_num-1:
                             break
                         else:
                             print("Invalid!")
 
+                    exit_num -= 1
                     if inv_input == exit_num:
                         break
 
-                    match inventory[inv_input-1]:
+                    match inventory[inv_input][0]:
                         case "Shield Depletor":
                             print("Enemy's both type of defense reduced by 10%!")
                             enemy.defense.reduce_multiplicative("Both", 10)
-                            potions +=1
+
+                            potions += 1
                             break
                         case "Sword Dull'r":
                             print("Enemy attack reduced by 3!")
                             enemy.attack -= 2
-                            potions +=1
+                            potions += 1
                             break
                         case "Carcinogenic Potion":
                             print("Enemy attack reduced by 1, Enemy physical defense reduced by 7%!")
@@ -165,6 +180,8 @@ def battle(player: Player, enemy: Enemy):
                         case _:
                             print("Invalid!")
 
+                if action == 5 and potions > prev_spell_count:
+                    spell_take_damage(inv_input)
 
 
             weapon_selected = player.weapons_list()[action - 1]
@@ -172,6 +189,11 @@ def battle(player: Player, enemy: Enemy):
                                                eval(f"enemy.defense.{weapon_selected.damage_type}"))
 
             enemy.take_damage(damage_dealt)
+
+            if weapon_selected.name == 'Life Steal Dagger':
+                print(f"Your Life Steal dagger healed you for {(healing := damage_dealt)}!")
+                player.heal(healing)
+
             player.weapons_list()[action - 1].take_dur_damage()
             if enemy.is_alive():
                 player_take_dmg = DamageType.calc_dmg(enemy.attack, eval(f"player.defense.{data.mob_type[enemy.name]}"))
@@ -191,8 +213,8 @@ def battle(player: Player, enemy: Enemy):
                 sleep(0.25)
                 match enemy.name:
                     case "Healer":
-                        print('The healer healed herself for 3 health!')
-                        enemy.heal(3)
+                        print('The healer healed herself for 1 health!')
+                        enemy.heal(1)
                     case "Wizard":
                         if rand.randint(1, 2) == 1:
                             print("The wizard spilled his healing spell on you! (player +5 hp)")
@@ -252,7 +274,10 @@ def encounter(player: Player):
     for spell in range(2):
         options.append(rand.choice(data.Debuff_Spells))
 
+    print("Weapons: ")
     for index, option in enumerate(options):
+        if index == 2:
+            print("Debuff Spells: ")
         print(f"{index + 1}. {option}")
 
     print("5. Leave with nothing")
@@ -268,6 +293,10 @@ def encounter(player: Player):
 
     enc_choice -= 1  # for 0-index
     chosen = options[enc_choice]
+    if 2 <= enc_choice <= 3:
+        inventory.append((chosen, 5))
+        print("Successfully added to inventory!")
+        return
     print("Which weapon would you like to replace? ")
     for weapon_num, weapon in enumerate(player.weapons_list()):
         print(f"{weapon_num + 1}: {weapon}")
@@ -278,7 +307,7 @@ def encounter(player: Player):
         if replace == 5:
             return
         elif 1 <= replace <= 4:
-            player.weapons[replace] = chosen
+            player.weapons[replace-1] = chosen
             break
         else:
             print("Invalid! ")
@@ -327,6 +356,7 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
         chosen_blessing = choices[chosen_blessing_index]
     else:
         chosen_blessing = forced_blessing
+        print(f"You received the {chosen_blessing} blessing.")
     match chosen_blessing:
         case "Gift of Medora":
             print(f"{player.max_hp} max hp increased to {player.max_hp+20}")
@@ -379,13 +409,15 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
         case _:
             raise IndexError(f"Blessing Does Not Exist: blessing given: {blessings} -> {chosen_blessing}")
 
-    input("Press Enter to continue...")
+    if not forced_blessing:
+        ("Press Enter to continue...")
     return
 
 def main():
     global inventory
     replay = True
     while replay:
+        data.init_defs()
         welcome_screen()
         player_input = _input("Enter 1 to play the game, enter 2 for help, enter anything else to quit")
 
@@ -398,16 +430,11 @@ def main():
                 exit()
         player = Player(input("Prisoner, declare your name at once: "))
         inventory = []
-        if player.name == "debug":
-            player.hp = _input("hp: ")
-            player.max_hp = player.hp
-            player.attack = _input('atk: ')
-            player.name = 'CHEATS ENABLED'
 
         print(f"Hello {player.name}. We have been expecting you. The first trial chamber is already open.")
 
         enemy_buff = 0
-        data.init_defs()
+
         player.weapons[0] = Weapon('Fist', 1000, 2, DamageType("Phys"))  # fist
         jason_counter = 0
         for chamber in range(1, 51):
