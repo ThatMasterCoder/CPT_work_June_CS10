@@ -94,7 +94,7 @@ class DamageType:
 
     @staticmethod
     def calc_dmg(damage_value, damage_defense):
-            return floor(damage_value * (1 - (damage_defense / 100)))
+        return round(damage_value * (1 - (damage_defense / 100)))
 
 class Gear:
     def __init__(self, name, durability):
@@ -133,7 +133,7 @@ class Weapon(Gear):
         self.special = special
 
     def __str__(self):
-        return f"{self.name}: {self.damage} damage ({self.damage_type}), Special Ability: {self.special}"
+        return f"{self.name}: {self.damage} damage ({self.damage_type}), Special Ability: {self.special}, Durability: {self.durability}"
 
 
 class Character:
@@ -219,14 +219,10 @@ class Player(Character):
 
 
 
-
-
 class Enemy(Character):
     def __init__(self, name, hp, max_hp, attack, defense, special=False):
         super().__init__(name, hp, max_hp, attack, defense)
         self.special = special
-
-
 
     def buff_all_stats(self, stat_increase):
         self.hp += stat_increase
@@ -236,6 +232,6 @@ class Enemy(Character):
 
     def print_ascii_art(self):
         try:
-            print(eval('mobs.' + underscoreify(self.name).capitalize()))
+            print(eval('mobs.' + underscoreify(self.name)))
         except AttributeError as e:
             raise AttributeError(str(e) + f'Mob tried: {self.name}')
