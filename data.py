@@ -30,7 +30,7 @@ def init_defs():
         45: Enemy("Valkyrie", 120, 120, 30, Defense(10, 10)),
         48: Enemy("Cerberus",150, 150, 40, Defense(30,50)),
         50: Enemy("Xareth, the Void Emperor", 200, 200, 60,
-                  Defense(50, 50)) # special boss
+                  Defense(50, 50))  # special boss
     }
 
     regular_mobs = [
@@ -43,6 +43,7 @@ def init_defs():
         Enemy("Tiger", 8,8, randint(3,6), Defense(5,0)),
         Enemy("Black Cat", 3, 3, 30, Defense(0,0))
     ]
+
 
     mob_type = {
         "Snake": Phys,
@@ -69,7 +70,7 @@ def init_defs():
 
     Weapons = [
         Weapon('Iron Sword', 15, 5, DamageType(Phys)),
-        Weapon('Spike-Infused Potion', 15, 4, DamageType(Magic)),
+        Weapon('Spike-Infused Potion', 15, 6, DamageType(Magic)),
         Weapon("Medora's Staff", 5, 23, DamageType(Magic)),
         Weapon("Maxor's Dagger", 20, 4, DamageType(Phys)),
         Weapon("Scylla's Wand", 20, 4, DamageType(Magic)),
@@ -77,7 +78,7 @@ def init_defs():
         Weapon("Fire Wand", 15, 5, DamageType(Magic)),
         Weapon("Alexander's Blade", 15, 10, DamageType(Phys)),
         Weapon("Lava Spray Wand", 10, 8, DamageType(Magic)),
-        Weapon('Life Steal Dagger', 10, 9, DamageType(Phys))
+        Weapon('Life Steal Dagger', 10, 5, DamageType(Phys), special=True)
     ]
     Debuff_Spells = [
         "Shield Depletor",
