@@ -3,18 +3,6 @@ from classes import *
 import data
 from time import sleep
 
-"""
-TODO: 
-1. Finish working on game logic
-1.5. Missing end of game...
-2. ADD THE WEAPONS TO THE GAME 
-2.5. add spells
-3. Finish Ascii mobs 
-3. ADD MORE SPELLS JLKASJFKA:SFLKJ:SEOGIJSDLKF
-99. Add coloured text
-"""
-
-
 def _input(_prompt: str = '') -> int:
     while True:
         try:
@@ -105,7 +93,7 @@ def battle(player: Player, enemy: Enemy):
         enemy.print_stats()
         print('\n\n')
 
-        sleep(0.5)
+        sleep(0.25)
         print(f"Player: {player.name}")
         player.print_ascii_art()
         player.print_stats()
@@ -315,7 +303,7 @@ def encounter(player: Player):
     print("Weapon replaced successfully.")
 
 
-def blessing(player: Player, jason_counter: int, forced_blessing: str | None = None):
+def blessing(player: Player, jason_counter: int, forced_blessing: str | None = None) -> bool:
     blessings = {
         'Gift of Medora': "Grants +20 permanent max hp",
         'Blessing of Goldor': "Grants +7 defense of both types",
@@ -346,7 +334,7 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
             chosen_blessing_index = _input()
             if chosen_blessing_index == 4:
                 print("You left without any blessing...")
-                return
+                return False
             elif 1 <= chosen_blessing_index <= 3:
                 break
             else:
@@ -401,7 +389,7 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
             print(f"{player.attack-3} attack increased to {player.attack}")
             print(f"{player.max_hp -5} max hp increased to {player.max_hp}")
         case "The Protector's Grace":
-            "Heals you to max hp instantly and restores 2 durability to all current weapons."
+            print("Heals you to max hp instantly and restores 2 durability to all current weapons.")
             player.heal(99999)
             for weapon in player.weapons:
                 if weapon is not None:
@@ -410,8 +398,8 @@ def blessing(player: Player, jason_counter: int, forced_blessing: str | None = N
             raise IndexError(f"Blessing Does Not Exist: blessing given: {blessings} -> {chosen_blessing}")
 
     if not forced_blessing:
-        ("Press Enter to continue...")
-    return
+        print("Press Enter to continue...")
+    return True
 
 def main():
     global inventory
@@ -464,7 +452,9 @@ def main():
 
             encounter(player)
             if chamber % 5 == 0:
-                blessing(player, jason_counter)
+                if not blessing(player, jason_counter):  # returns true if blessing is given else false
+                    print("Your blessing has caused the mobs to become stronger...")
+                    enemy_buff += 1
 
         if player.is_alive():
             print("You have successfully conquered Xareth's Dungeon. You win!")
