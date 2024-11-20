@@ -1,4 +1,10 @@
-# CPT_work_June_CS10
-me when i write code and dont know what im doing at all
+# Original project for CS10_June 2024
 
-uhhh run the main.exe i guess
+Hello, This is Justin. This is my original project
+
+I have uh no idea how github or anything works
+go under the dist folder
+run main.exe
+it should run
+any concerns please contact me on discord @very_smort
+(please mention that you found me through this)
