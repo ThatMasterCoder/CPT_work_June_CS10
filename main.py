@@ -1,6 +1,6 @@
 import random as rand
-from classes import *
-import data
+from src.classes import *
+import src.data
 from time import sleep
 
 def _input(_prompt: str = '') -> int:
