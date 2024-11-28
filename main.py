@@ -3,6 +3,8 @@ from src.classes import *
 import src.data
 from time import sleep
 
+# dependent on src.classes and src.data existing, PLEASE DOWNLOAD WITH THE WHOLE PACKAGE!!!!
+
 def _input(_prompt: str = '') -> int:
     while True:
         try:
